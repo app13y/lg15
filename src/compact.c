@@ -4,18 +4,20 @@
 #include "gosthopper.h"
 #include "tables.h"
 
-static void* delayedShiftMemoryPointer(void **memory, size_t shiftInBytes) {
+
+static void *delayedShiftMemoryPointer(void **memory, size_t shiftInBytes) {
     void *original = *memory;
-    *memory = (uint8_t*)(*memory) + shiftInBytes;
+    *memory = (uint8_t *) (*memory) + shiftInBytes;
     return original;
 }
+
 
 static uint8_t multiplyInGF256(
         uint8_t left,
         uint8_t right
 ) {
     return !left || !right ?
-           (uint8_t) 0:
+           (uint8_t) 0 :
            exponentialTable[(logarithmicTable[left] + logarithmicTable[right]) % 0xff];
 }
 
@@ -32,6 +34,7 @@ static void applyXTransformation(
     reinterpretedOutput_[0] = reinterpretedKey_[0] ^ reinterpretedInput_[0];
     reinterpretedOutput_[1] = reinterpretedKey_[1] ^ reinterpretedInput_[1];
 }
+
 
 static void applySTransformation(
         uint8_t *block
@@ -135,6 +138,7 @@ static void applyFTransformation(
     swapBlocks(left, right);
 }
 
+
 static void fetchKeyScheduleRoundConstant(
         uint8_t index,
         uint8_t *roundConstant,
@@ -146,6 +150,7 @@ static void fetchKeyScheduleRoundConstant(
     temporary_[BlockLengthInBytes - 1] = index;
     applyLTransformation(temporary_, roundConstant);
 }
+
 
 static void scheduleRoundKeys(
         void *roundKeys,
@@ -181,6 +186,24 @@ static void scheduleRoundKeys(
 }
 
 
+void scheduleEncryptionRoundKeys(
+        void *roundKeys,
+        const void *key,
+        void *memory
+) {
+    scheduleRoundKeys(roundKeys, key, memory);
+}
+
+
+void scheduleDecryptionRoundKeys(
+        void *roundKeys,
+        const void *key,
+        void *memory
+) {
+    scheduleRoundKeys(roundKeys, key, memory);
+}
+
+
 void encryptBlock(
         const void *roundKeys,
         void *block,
@@ -197,6 +220,7 @@ void encryptBlock(
     }
     applyXTransformation(&reinterpretedRoundKeys_[roundIndex_ * BlockLengthInBytes], block, block);
 }
+
 
 void decryptBlock(
         const void *roundKeys,
