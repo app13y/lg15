@@ -33,4 +33,16 @@ void decryptBlock(
         void *memory
 );
 
+void scheduleEncryptionRoundKeys(
+        void *roundKeys,
+        const void *key,
+        void *memory
+);
+
+void scheduleDecryptionRoundKeys(
+        void *roundKeys,
+        const void *key,
+        void *memory
+);
+
 #endif
