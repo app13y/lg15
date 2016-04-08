@@ -10,7 +10,7 @@ New cipher itself has a structure of SP-network with fixed byte-to-byte S-box an
 * decreased number of rounds (10 rounds),
 * advanced round keys scheduling routine (Feistel network)
 
-compared with its predecessor GOST 28147.
+compared to its predecessor GOST 28147.
 
 This project provides several ANSI/ISO C versions of implementation with minimal or no dependencies while achieving high performance:
 
