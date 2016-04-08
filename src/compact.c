@@ -27,12 +27,22 @@ static void applyXTransformation(
         const uint8_t *input,
         uint8_t *output
 ) {
-    const uint64_t *reinterpretedKey_ = (const uint64_t *) key;
-    const uint64_t *reinterpretedInput_ = (const uint64_t *) input;
-    uint64_t *reinterpretedOutput_ = (uint64_t *) output;
+    union constantBlock_t {
+        const uint8_t *asBytes;
+        const uint64_t *asQWords;
+    } key_, input_;
 
-    reinterpretedOutput_[0] = reinterpretedKey_[0] ^ reinterpretedInput_[0];
-    reinterpretedOutput_[1] = reinterpretedKey_[1] ^ reinterpretedInput_[1];
+    union mutableBlock_t {
+        uint8_t *asBytes;
+        uint64_t *asQWords;
+    } output_;
+
+    key_.asBytes = key;
+    input_.asBytes = input;
+    output_.asBytes = output;
+
+    output_.asQWords[0] = key_.asQWords[0] ^ input_.asQWords[0];
+    output_.asQWords[1] = key_.asQWords[1] ^ input_.asQWords[1];
 }
 
 
