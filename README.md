@@ -15,13 +15,18 @@ compared with its predecessor GOST 28147.
 This project provides several ANSI/ISO C versions of implementation with minimal or no dependencies while achieving high performance:
 
 * compact implementation,
-* optimised implementation (*yet to be implemented*),
+* optimised implementation,
 * SIMD implementation (*yet to be implemented*).
 
 #### Compact implementation
 
 Straightforward implementation of block encryption and decryption routines, with little or no major optimisations. Has lowest memory requirements.
 
+#### Optimised implementation
+
+To use optimised implementation, define `USE_OPTIMISED_IMPLEMENTATION` environment variable before compiling.
+
+Optimised implementation employs matrix multiplication precomutation technique described in [add link], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables.
 
 ### Portability
 
