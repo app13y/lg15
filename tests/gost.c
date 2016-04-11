@@ -29,7 +29,7 @@ int testKeyScheduling(void) {
         goto cleanup;
     }
 
-    memory_ = malloc(BlockLengthInBytes * 3);
+    memory_ = malloc(WorkspaceOfScheduleEncryptionRoundKeys);
     if (!memory_) {
         ++numberOfFailedTests_;
         goto cleanup;
@@ -67,7 +67,7 @@ int testBlockEncryption(void) {
             0x7f, 0x67, 0x9d, 0x90, 0xbe, 0xbc, 0x24, 0x30, 0x5a, 0x46, 0x8d, 0x42, 0xb9, 0xd4, 0xed, 0xcd,
     };
 
-    memory_ = malloc(BlockLengthInBytes);
+    memory_ = malloc(WorkspaceOfEncryptBlock);
     if (!memory_) {
         ++numberOfFailedTests_;
         goto cleanup;
@@ -104,7 +104,7 @@ int testBlockDecryption(void) {
         goto cleanup;
     }
 
-    memory_ = malloc(BlockLengthInBytes * 4);
+    memory_ = malloc(WorkspaceOfScheduleDecryptionRoundKeys);
     if (!memory_) {
         ++numberOfFailedTests_;
         goto cleanup;
