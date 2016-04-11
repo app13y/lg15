@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
+
 enum {
     NumberOfRounds = 10,
     NumberOfRoundsInKeySchedule = 8,
@@ -21,6 +22,12 @@ enum operationMode_t {
     CFB,
     OFB
 };
+
+extern const size_t WorkspaceOfScheduleEncryptionRoundKeys;
+extern const size_t WorkspaceOfScheduleDecryptionRoundKeys;
+extern const size_t WorkspaceOfEncryptBlock;
+extern const size_t WorkspaceOfDecryptBlock;
+
 
 void encryptBlock(
         const void *roundKeys,
