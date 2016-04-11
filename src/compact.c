@@ -4,6 +4,34 @@
 #include "gosthopper.h"
 #include "tables.h"
 
+#define Maximum(left, right) (((left) >= (right)) ? (left) : (right))
+
+union constantMemoryLocation_t {
+    const uint8_t *asBytes;
+    const uint64_t *asQWords;
+};
+
+union mutableMemoryLocation_t {
+    uint8_t *asBytes;
+    uint64_t *asQWords;
+};
+
+
+static uint8_t *getMutableRoundKey(void *roundKeys, size_t roundKeyIndex) {
+    union mutableMemoryLocation_t roundKey_;
+    uint8_t *reinterpretedRoundKeys_ = roundKeys;
+    roundKey_.asBytes = &reinterpretedRoundKeys_[roundKeyIndex * BlockLengthInBytes];
+    return roundKey_.asBytes;
+}
+
+
+static const uint8_t *getConstantRoundKey(const void *roundKeys, size_t roundKeyIndex) {
+    union constantMemoryLocation_t roundKey_;
+    const uint8_t *reinterpretedRoundKeys_ = roundKeys;
+    roundKey_.asBytes = &reinterpretedRoundKeys_[roundKeyIndex * BlockLengthInBytes];
+    return roundKey_.asBytes;
+}
+
 
 static void *delayedShiftMemoryPointer(void **memory, size_t shiftInBytes) {
     void *original = *memory;
@@ -27,15 +55,8 @@ static void applyXTransformation(
         const uint8_t *input,
         uint8_t *output
 ) {
-    union constantBlock_t {
-        const uint8_t *asBytes;
-        const uint64_t *asQWords;
-    } key_, input_;
-
-    union mutableBlock_t {
-        uint8_t *asBytes;
-        uint64_t *asQWords;
-    } output_;
+    union constantMemoryLocation_t key_, input_;
+    union mutableMemoryLocation_t output_;
 
     key_.asBytes = key;
     input_.asBytes = input;
@@ -133,6 +154,9 @@ static void swapBlocks(
 }
 
 
+#define WorkspaceOfApplyFTransformation_ (BlockLengthInBytes * 2)
+
+
 static void applyFTransformation(
         const uint8_t *key,
         uint8_t *left,
@@ -149,6 +173,9 @@ static void applyFTransformation(
 }
 
 
+#define WorkspaceOfFetchKeyScheduleRoundConstant_ BlockLengthInBytes
+
+
 static void fetchKeyScheduleRoundConstant(
         uint8_t index,
         uint8_t *roundConstant,
@@ -157,9 +184,15 @@ static void fetchKeyScheduleRoundConstant(
     uint8_t *temporary_ = delayedShiftMemoryPointer(&memory, BlockLengthInBytes);
     memset(temporary_, 0, BlockLengthInBytes);
 
+    /* WARNING: endianness-specific code here! */
     temporary_[BlockLengthInBytes - 1] = index;
     applyLTransformation(temporary_, roundConstant);
 }
+
+
+#define WorkspaceOfScheduleRoundKeys_ (BlockLengthInBytes + \
+                                       Maximum(WorkspaceOfFetchKeyScheduleRoundConstant_, \
+                                               WorkspaceOfApplyFTransformation_))
 
 
 static void scheduleRoundKeys(
@@ -170,30 +203,31 @@ static void scheduleRoundKeys(
     uint8_t *feistelRoundKey_ = delayedShiftMemoryPointer(&memory, BlockLengthInBytes);
 
     uint8_t index_ = 0x01;
-    uint8_t roundKeyPairIndex_ = 0;
-
-    uint8_t *reinterpretedRoundKeys_ = roundKeys;
+    size_t roundKeyPairIndex_ = 0;
     const uint8_t *key_ = key;
 
-    memcpy(&reinterpretedRoundKeys_[0], key_, BlockLengthInBytes);
-    memcpy(&reinterpretedRoundKeys_[BlockLengthInBytes], key_ + BlockLengthInBytes, BlockLengthInBytes);
+    memcpy(getMutableRoundKey(roundKeys, 0), key_, BlockLengthInBytes);
+    memcpy(getMutableRoundKey(roundKeys, 1), key_ + BlockLengthInBytes, BlockLengthInBytes);
 
     for (; roundKeyPairIndex_ < 4; ++roundKeyPairIndex_) {
         size_t feistelRoundIndex_ = 0;
 
-        memcpy(&reinterpretedRoundKeys_[(2 + 2 * roundKeyPairIndex_) * BlockLengthInBytes],
-               &reinterpretedRoundKeys_[(2 + 2 * (roundKeyPairIndex_ - 1)) * BlockLengthInBytes],
+        memcpy(getMutableRoundKey(roundKeys, roundKeyPairIndex_ * 2 + 2),
+               getMutableRoundKey(roundKeys, (roundKeyPairIndex_ - 1) * 2 + 2),
                BlockLengthInBytes * 2);
 
         for (; feistelRoundIndex_ < NumberOfRoundsInKeySchedule; ++feistelRoundIndex_) {
             fetchKeyScheduleRoundConstant(index_++, feistelRoundKey_, memory);
             applyFTransformation(feistelRoundKey_,
-                                 &reinterpretedRoundKeys_[(2 + 2 * roundKeyPairIndex_) * BlockLengthInBytes],
-                                 &reinterpretedRoundKeys_[(3 + 2 * roundKeyPairIndex_) * BlockLengthInBytes],
+                                 getMutableRoundKey(roundKeys, roundKeyPairIndex_ * 2 + 2),
+                                 getMutableRoundKey(roundKeys, roundKeyPairIndex_ * 2 + 3),
                                  memory);
         }
     }
 }
+
+
+const size_t WorkspaceOfScheduleEncryptionRoundKeys = WorkspaceOfScheduleRoundKeys_;
 
 
 void scheduleEncryptionRoundKeys(
@@ -205,6 +239,9 @@ void scheduleEncryptionRoundKeys(
 }
 
 
+const size_t WorkspaceOfScheduleDecryptionRoundKeys = WorkspaceOfScheduleRoundKeys_;
+
+
 void scheduleDecryptionRoundKeys(
         void *roundKeys,
         const void *key,
@@ -214,6 +251,9 @@ void scheduleDecryptionRoundKeys(
 }
 
 
+const size_t WorkspaceOfEncryptBlock = BlockLengthInBytes;
+
+
 void encryptBlock(
         const void *roundKeys,
         void *block,
@@ -221,15 +261,17 @@ void encryptBlock(
 ) {
     uint8_t *temporary_ = delayedShiftMemoryPointer(&memory, BlockLengthInBytes);
 
-    const uint8_t *reinterpretedRoundKeys_ = roundKeys;
-    size_t roundIndex_ = 0;
-    for (; roundIndex_ < NumberOfRounds - 1; ++roundIndex_) {
-        applyXSLTransformation(&reinterpretedRoundKeys_[roundIndex_ * BlockLengthInBytes],
+    size_t round_ = 0;
+    for (; round_ < NumberOfRounds - 1; ++round_) {
+        applyXSLTransformation(getConstantRoundKey(roundKeys, round_),
                                block,
                                temporary_);
     }
-    applyXTransformation(&reinterpretedRoundKeys_[roundIndex_ * BlockLengthInBytes], block, block);
+    applyXTransformation(getConstantRoundKey(roundKeys, round_), block, block);
 }
+
+
+const size_t WorkspaceOfDecryptBlock = BlockLengthInBytes;
 
 
 void decryptBlock(
@@ -239,15 +281,13 @@ void decryptBlock(
 ) {
     uint8_t *temporary_ = delayedShiftMemoryPointer(&memory, BlockLengthInBytes);
 
-    const uint8_t *reinterpretedRoundKeys_ = roundKeys;
-    size_t roundIndex_ = 0;
-    for (roundIndex_ = NumberOfRounds - 1; roundIndex_ > 0; --roundIndex_) {
-        applyInversedSLXTransformation(&reinterpretedRoundKeys_[roundIndex_ * BlockLengthInBytes],
+    size_t round_ = 0;
+    for (round_ = NumberOfRounds - 1; round_ > 0; --round_) {
+        applyInversedSLXTransformation(getConstantRoundKey(roundKeys, round_),
                                        block,
                                        temporary_);
     }
-
-    applyXTransformation(&reinterpretedRoundKeys_[roundIndex_ * BlockLengthInBytes], block, block);
+    applyXTransformation(getConstantRoundKey(roundKeys, round_), block, block);
 }
 
 
