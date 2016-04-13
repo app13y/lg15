@@ -12,7 +12,7 @@ New cipher itself has a structure of SP-network with fixed byte-to-byte S-box an
 
 compared to its predecessor GOST 28147.
 
-This project provides several ANSI/ISO C versions of implementation with minimal or no dependencies while achieving high performance:
+This project provides several C99 versions of implementation with minimal or no dependencies while achieving high performance:
 
 * compact implementation,
 * optimised implementation,
@@ -40,6 +40,6 @@ Porting optimised and SIMD versions on platform with a different endianness requ
 Project configuration is currently a work-in-progress, sources are currently compiled with
 
 ```
--ansi -pedantic -Wall -Wextra -Werror -Wno-unused-function
+-std=c99 -pedantic -Wall -Wextra -Werror
 ```
 
