@@ -11,9 +11,6 @@ enum {
 
     BlockLengthInBytes = 128 / 8,
     KeyLengthInBytes = 256 / 8,
-
-    BlockLengthInLimbs = BlockLengthInBytes / sizeof(uint64_t),
-    KeyLengthInLimbs = KeyLengthInBytes / sizeof(uint64_t)
 };
 
 enum operationMode_t {
@@ -23,21 +20,15 @@ enum operationMode_t {
     OFB
 };
 
-extern const size_t WorkspaceOfScheduleEncryptionRoundKeys;
-extern const size_t WorkspaceOfScheduleDecryptionRoundKeys;
-extern const size_t WorkspaceOfEncryptBlock;
-extern const size_t WorkspaceOfDecryptBlock;
-
+extern const size_t WorkspaceOfScheduleRoundKeys;
 
 void encryptBlock(
         const void *roundKeys,
-        void *block,
-        void *memory
+        void *block
 );
 void decryptBlock(
         const void *roundKeys,
-        void *block,
-        void *memory
+        void *block
 );
 
 void scheduleEncryptionRoundKeys(
