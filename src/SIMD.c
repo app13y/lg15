@@ -3,9 +3,7 @@
 #if defined __SSE4_1__
     #include <smmintrin.h>
 #else
-
-#include <emmintrin.h>
-
+    #include <emmintrin.h>
 #endif
 
 #include <stdio.h>
@@ -36,8 +34,6 @@ const size_t WorkspaceOfScheduleRoundKeys = 0;
                                Pi[ _mm_extract_epi8( *block, 0 ) ] );
     }
 #else
-
-
 static void applySTransformation(__m128i *block) {
     union block_t {
         uint8_t asBytes[BlockLengthInBytes];
@@ -49,8 +45,6 @@ static void applySTransformation(__m128i *block) {
     }
     *block = _mm_loadu_si128(&temporary_.asXMMWord);
 }
-
-
 #endif
 
 #if defined __SSE4_1__
@@ -87,14 +81,18 @@ static void applySTransformation(__m128i *block) {
 #endif
 
 
-static void swapBlocks(__m128i *left, __m128i *right) {
+static void swapBlocks(
+        __m128i *left,
+        __m128i *right) {
     *left = _mm_xor_si128(*left, *right);
     *right = _mm_xor_si128(*left, *right);
     *left = _mm_xor_si128(*left, *right);
 }
 
 
-static void applyLSTransformation(const __m128i *input, __m128i *output
+static void applyLSTransformation(
+        const __m128i *input,
+        __m128i *output
 ) {
     __m128i temporary1_, temporary2_;
     __m128i addresses1_, addresses2_;
@@ -135,7 +133,9 @@ static void applyLSTransformation(const __m128i *input, __m128i *output
 }
 
 
-static void applyInversedLSTransformation(const __m128i *input, __m128i *output
+static void applyInversedLSTransformation(
+        const __m128i *input,
+        __m128i *output
 ) {
     __m128i cache1_, cache2_;
     __m128i addresses1_, addresses2_;
@@ -174,7 +174,10 @@ static void applyInversedLSTransformation(const __m128i *input, __m128i *output
 }
 
 
-static void applyFTransformation(int constantIndex, __m128i *left, __m128i *right
+static void applyFTransformation(
+        int constantIndex,
+        __m128i *left,
+        __m128i *right
 ) {
     __m128i temporary1_, temporary2_;
 
@@ -186,7 +189,10 @@ static void applyFTransformation(int constantIndex, __m128i *left, __m128i *righ
 }
 
 
-void scheduleEncryptionRoundKeys(void *restrict roundKeys, const void *restrict key, void *restrict memory
+void scheduleEncryptionRoundKeys(
+        void *restrict roundKeys,
+        const void *restrict key,
+        void *restrict memory
 ) {
     (void) memory;
     uint64_t *roundKeys_ = roundKeys;
@@ -209,7 +215,10 @@ void scheduleEncryptionRoundKeys(void *restrict roundKeys, const void *restrict 
 }
 
 
-void scheduleDecryptionRoundKeys(void *restrict roundKeys, const void *restrict key, void *restrict memory
+void scheduleDecryptionRoundKeys(
+        void *restrict roundKeys,
+        const void *restrict key,
+        void *restrict memory
 ) {
     uint64_t *roundKeys_ = roundKeys;
     scheduleEncryptionRoundKeys(roundKeys, key, memory);
@@ -225,7 +234,9 @@ void scheduleDecryptionRoundKeys(void *restrict roundKeys, const void *restrict 
 }
 
 
-void encryptBlock(const void *restrict roundKeys, void *restrict data
+void encryptBlock(
+        const void *restrict roundKeys,
+        void *restrict data
 ) {
     const uint64_t *roundKeys_ = roundKeys;
     __m128i cache_, data_;
@@ -241,7 +252,9 @@ void encryptBlock(const void *restrict roundKeys, void *restrict data
 }
 
 
-void decryptBlock(const void *restrict roundKeys, void *restrict data
+void decryptBlock(
+        const void *restrict roundKeys,
+        void *restrict data
 ) {
     const uint64_t *roundKeys_ = roundKeys;
     __m128i cache_, data_;
