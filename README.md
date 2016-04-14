@@ -16,7 +16,7 @@ This project provides several C99 versions of implementation with minimal or no 
 
 * compact implementation,
 * optimised implementation,
-* SIMD implementation (*yet to be implemented*).
+* SIMD implementation.
 
 #### Compact implementation
 
@@ -26,7 +26,13 @@ Straightforward implementation of block encryption and decryption routines, with
 
 To use optimised implementation, define `USE_OPTIMISED_IMPLEMENTATION` environment variable before compiling.
 
-Optimised implementation employs matrix multiplication precomutation technique described in [add link], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables.
+Optimised implementation employs vector-by-matrix multiplication precomutation technique described in [add link], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables.
+
+#### SIMD implementation
+
+SIMD implementation automatically enables when `USE_OPTIMISED_IMPLEMENTATION` is defined and Intel (at least) SSE2 instruction set is supported by processor.
+
+SIMD implementation utilises SSE instruction set, a set of extended processor instructions which enable one to operate over 128-bit XMM registers. Combined with vector-by-matrix multiplication, SSE instructions help to achieve incredible performance.
 
 ### Portability
 
@@ -41,5 +47,11 @@ Project configuration is currently a work-in-progress, sources are currently com
 
 ```
 -std=c99 -pedantic -Wall -Wextra -Werror
+```
+
+Release version is compiled with
+
+```
+-std=c99 -m64 -Ofast
 ```
 
