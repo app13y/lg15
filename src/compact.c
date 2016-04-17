@@ -1,5 +1,3 @@
-#if !defined USE_OPTIMISED_IMPLEMENTATION
-
 #include <string.h>
 #include "gosthopper.h"
 #include "tables.h"
@@ -240,7 +238,3 @@ void decryptBlock(
     applyXTransformation(&roundKeys_[BlockLengthInBytes * round_], block, block);
 }
 
-
-#else
-typedef void ISOCompilerHappiness_t;
-#endif

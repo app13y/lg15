@@ -1,5 +1,3 @@
-#if defined USE_OPTIMISED_IMPLEMENTATION && !defined __SSE2__
-
 #include <string.h>
 #include "gosthopper.h"
 #include "tables.h"
@@ -206,8 +204,3 @@ void decryptBlock(
     data_[0] = cache_[0] ^ roundKeys_[2 * round_];
     data_[1] = cache_[1] ^ roundKeys_[2 * round_ + 1];
 }
-
-
-#else
-typedef void ISOCompilerHappiness_t;
-#endif

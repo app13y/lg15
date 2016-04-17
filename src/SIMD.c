@@ -1,12 +1,4 @@
-#if defined USE_OPTIMISED_IMPLEMENTATION && defined __SSE2__
-
-#if defined __SSE4_1__
-    #include <smmintrin.h>
-#else
-    #include <emmintrin.h>
-#endif
-
-#include <stdio.h>
+#include <emmintrin.h>
 #include <string.h>
 #include "gosthopper.h"
 #include "tables.h"
@@ -14,71 +6,29 @@
 
 const size_t WorkspaceOfScheduleRoundKeys = 0;
 
-#if defined __SSE4_1__
-    static void applySTransformation(__m128i* block) {
-        *block = _mm_set_epi8( Pi[ _mm_extract_epi8( *block, 15 ) ],
-                               Pi[ _mm_extract_epi8( *block, 14 ) ],
-                               Pi[ _mm_extract_epi8( *block, 13 ) ],
-                               Pi[ _mm_extract_epi8( *block, 12 ) ],
-                               Pi[ _mm_extract_epi8( *block, 11 ) ],
-                               Pi[ _mm_extract_epi8( *block, 10 ) ],
-                               Pi[ _mm_extract_epi8( *block, 9 ) ],
-                               Pi[ _mm_extract_epi8( *block, 8 ) ],
-                               Pi[ _mm_extract_epi8( *block, 7 ) ],
-                               Pi[ _mm_extract_epi8( *block, 6 ) ],
-                               Pi[ _mm_extract_epi8( *block, 5 ) ],
-                               Pi[ _mm_extract_epi8( *block, 4 ) ],
-                               Pi[ _mm_extract_epi8( *block, 3 ) ],
-                               Pi[ _mm_extract_epi8( *block, 2 ) ],
-                               Pi[ _mm_extract_epi8( *block, 1 ) ],
-                               Pi[ _mm_extract_epi8( *block, 0 ) ] );
-    }
-#else
 static void applySTransformation(__m128i *block) {
     union block_t {
         uint8_t asBytes[BlockLengthInBytes];
         __m128i asXMMWord;
-    } temporary_ = {0};
+    } temporary_ = {{0}};
     _mm_storeu_si128(&(temporary_.asXMMWord), *block);
     for (int byteIndex_ = 0; byteIndex_ < BlockLengthInBytes; ++byteIndex_) {
         temporary_.asBytes[byteIndex_] = Pi[temporary_.asBytes[byteIndex_]];
     }
     *block = _mm_loadu_si128(&temporary_.asXMMWord);
 }
-#endif
 
-#if defined __SSE4_1__
-    static void applyInversedSTransformation(__m128i *block) {
-        *block = _mm_set_epi8( InversedPi[ _mm_extract_epi8( *block, 15 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 14 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 13 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 12 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 11 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 10 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 9 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 8 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 7 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 6 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 5 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 4 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 3 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 2 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 1 ) ],
-                               InversedPi[ _mm_extract_epi8( *block, 0 ) ] );
+static void applyInversedSTransformation(__m128i *block) {
+    union block_t {
+        uint8_t asBytes[BlockLengthInBytes];
+        __m128i asXMMWord;
+    } temporary_ = {{0}};
+    _mm_storeu_si128(&temporary_.asXMMWord, *block);
+    for (int byteIndex_ = 0; byteIndex_ < BlockLengthInBytes; ++byteIndex_) {
+        temporary_.asBytes[byteIndex_] = InversedPi[temporary_.asBytes[byteIndex_]];
     }
-#else
-    static void applyInversedSTransformation(__m128i *block) {
-        union block_t {
-            uint8_t asBytes[BlockLengthInBytes];
-            __m128i asXMMWord;
-        } temporary_ = {0};
-        _mm_storeu_si128(&temporary_.asXMMWord, *block);
-        for (int byteIndex_ = 0; byteIndex_ < BlockLengthInBytes; ++byteIndex_) {
-            temporary_.asBytes[byteIndex_] = InversedPi[temporary_.asBytes[byteIndex_]];
-        }
-        *block = _mm_loadu_si128(&temporary_.asXMMWord);
-    }
-#endif
+    *block = _mm_loadu_si128(&temporary_.asXMMWord);
+}
 
 
 static void swapBlocks(
@@ -97,37 +47,35 @@ static void applyLSTransformation(
     __m128i temporary1_, temporary2_;
     __m128i addresses1_, addresses2_;
 
-    addresses1_ = _mm_and_si128(*(__m128i *) bitmask, *input);
-    addresses2_ = _mm_andnot_si128(*(__m128i *) bitmask, *input);
+    addresses1_ = _mm_and_si128(*(const __m128i *) bitmask, *input);
+    addresses2_ = _mm_andnot_si128(*(const __m128i *) bitmask, *input);
 
     addresses1_ = _mm_srli_epi16(addresses1_, 4);
     addresses2_ = _mm_slli_epi16(addresses2_, 4);
 
-    temporary1_ = _mm_load_si128((__m128i *) (precomputedLSTable.asRawBytes
-                                              + _mm_extract_epi16(addresses1_, 0)
-                                              + 0x1000));
-    temporary2_ = _mm_load_si128((__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 0)));
+    temporary1_ = _mm_load_si128((const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 0) + 0x1000));
+    temporary2_ = _mm_load_si128((const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 0)));
 
-    temporary1_ = _mm_xor_si128(temporary1_, *(__m128i *) (precomputedLSTable.asRawBytes+ _mm_extract_epi16(addresses1_, 1)+ 0x3000));
-    temporary2_ = _mm_xor_si128(temporary2_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 1) + 0x2000));
+    temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable+ _mm_extract_epi16(addresses1_, 1)+ 0x3000));
+    temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 1) + 0x2000));
 
-    temporary1_ = _mm_xor_si128(temporary1_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 2) + 0x5000));
-    temporary2_ = _mm_xor_si128(temporary2_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 2) + 0x4000));
+    temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 2) + 0x5000));
+    temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 2) + 0x4000));
 
-    temporary1_ = _mm_xor_si128(temporary1_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 3) + 0x7000));
-    temporary2_ = _mm_xor_si128(temporary2_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 3) + 0x6000));
+    temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 3) + 0x7000));
+    temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 3) + 0x6000));
 
-    temporary1_ = _mm_xor_si128(temporary1_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 4) + 0x9000));
-    temporary2_ = _mm_xor_si128(temporary2_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 4) + 0x8000));
+    temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 4) + 0x9000));
+    temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 4) + 0x8000));
 
-    temporary1_ = _mm_xor_si128(temporary1_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 5) + 0xB000));
-    temporary2_ = _mm_xor_si128(temporary2_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 5) + 0xA000));
+    temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 5) + 0xB000));
+    temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 5) + 0xA000));
 
-    temporary1_ = _mm_xor_si128(temporary1_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 6) + 0xD000));
-    temporary2_ = _mm_xor_si128(temporary2_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 6) + 0xC000));
+    temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 6) + 0xD000));
+    temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 6) + 0xC000));
 
-    temporary1_ = _mm_xor_si128(temporary1_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 7) + 0xF000));
-    temporary2_ = _mm_xor_si128(temporary2_, *(__m128i *) (precomputedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 7) + 0xE000));
+    temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 7) + 0xF000));
+    temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 7) + 0xE000));
 
     *output = _mm_xor_si128(temporary1_, temporary2_);
 }
@@ -140,35 +88,35 @@ static void applyInversedLSTransformation(
     __m128i cache1_, cache2_;
     __m128i addresses1_, addresses2_;
 
-    addresses1_ = _mm_and_si128(*(__m128i *) bitmask, *input);
-    addresses2_ = _mm_andnot_si128(*(__m128i *) bitmask, *input);
+    addresses1_ = _mm_and_si128(*(const __m128i *) bitmask, *input);
+    addresses2_ = _mm_andnot_si128(*(const __m128i *) bitmask, *input);
 
     addresses1_ = _mm_srli_epi16(addresses1_, 4);
     addresses2_ = _mm_slli_epi16(addresses2_, 4);
 
-    cache1_ = _mm_load_si128((__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 0) + 0x1000));
-    cache2_ = _mm_load_si128((__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 0)));
+    cache1_ = _mm_load_si128((const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 0) + 0x1000));
+    cache2_ = _mm_load_si128((const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 0)));
 
-    cache1_ = _mm_xor_si128(cache1_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 1) + 0x3000));
-    cache2_ = _mm_xor_si128(cache2_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 1) + 0x2000));
+    cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 1) + 0x3000));
+    cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 1) + 0x2000));
 
-    cache1_ = _mm_xor_si128(cache1_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 2) + 0x5000));
-    cache2_ = _mm_xor_si128(cache2_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 2) + 0x4000));
+    cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 2) + 0x5000));
+    cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 2) + 0x4000));
 
-    cache1_ = _mm_xor_si128(cache1_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 3) + 0x7000));
-    cache2_ = _mm_xor_si128(cache2_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 3) + 0x6000));
+    cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 3) + 0x7000));
+    cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 3) + 0x6000));
 
-    cache1_ = _mm_xor_si128(cache1_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 4) + 0x9000));
-    cache2_ = _mm_xor_si128(cache2_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 4) + 0x8000));
+    cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 4) + 0x9000));
+    cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 4) + 0x8000));
 
-    cache1_ = _mm_xor_si128(cache1_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 5) + 0xB000));
-    cache2_ = _mm_xor_si128(cache2_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 5) + 0xA000));
+    cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 5) + 0xB000));
+    cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 5) + 0xA000));
 
-    cache1_ = _mm_xor_si128(cache1_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 6) + 0xD000));
-    cache2_ = _mm_xor_si128(cache2_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 6) + 0xC000));
+    cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 6) + 0xD000));
+    cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 6) + 0xC000));
 
-    cache1_ = _mm_xor_si128(cache1_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses1_, 7) + 0xF000));
-    cache2_ = _mm_xor_si128(cache2_, *(__m128i *) (precomputedInversedLSTable.asRawBytes + _mm_extract_epi16(addresses2_, 7) + 0xE000));
+    cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 7) + 0xF000));
+    cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 7) + 0xE000));
 
     *output = _mm_xor_si128(cache1_, cache2_);
 }
@@ -181,7 +129,7 @@ static void applyFTransformation(
 ) {
     __m128i temporary1_, temporary2_;
 
-    temporary1_ = _mm_loadu_si128((__m128i *) &roundConstants[BlockLengthInBytes * constantIndex]);
+    temporary1_ = _mm_loadu_si128((const __m128i *) &roundConstants[BlockLengthInBytes * constantIndex]);
     temporary2_ = _mm_xor_si128(*left, temporary1_);
     applyLSTransformation(&temporary2_, &temporary1_);
     *right = _mm_xor_si128(*right, temporary1_);
@@ -244,10 +192,10 @@ void encryptBlock(
 
     data_ = _mm_loadu_si128(data);
     for (round_ = 0; round_ < NumberOfRounds - 1; ++round_) {
-        cache_ = _mm_xor_si128(data_, *(__m128i *) &roundKeys_[2 * round_]);
+        cache_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * round_]);
         applyLSTransformation(&cache_, &data_);
     }
-    data_ = _mm_xor_si128(data_, *(__m128i *) &roundKeys_[2 * round_]);
+    data_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * round_]);
     _mm_store_si128(data, data_);
 }
 
@@ -260,24 +208,19 @@ void decryptBlock(
     __m128i cache_, data_;
 
     data_ = _mm_loadu_si128(data);
-    data_ = _mm_xor_si128(data_, *(__m128i *) &roundKeys_[2 * (NumberOfRounds - 1)]);
+    data_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * (NumberOfRounds - 1)]);
 
     applySTransformation(&data_);
     applyInversedLSTransformation(&data_, &cache_);
     applyInversedLSTransformation(&cache_, &data_);
-    cache_ = _mm_xor_si128(data_, *(__m128i *) &roundKeys_[2 * (NumberOfRounds - 2)]);
+    cache_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * (NumberOfRounds - 2)]);
 
     for (int round_ = NumberOfRounds - 3; round_ > 0; --round_) {
         applyInversedLSTransformation(&cache_, &data_);
-        cache_ = _mm_xor_si128(data_, *(__m128i *) &roundKeys_[2 * round_]);
+        cache_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * round_]);
     }
 
     applyInversedSTransformation(&cache_);
-    data_ = _mm_xor_si128(cache_, *(__m128i *) &roundKeys_[0]);
+    data_ = _mm_xor_si128(cache_, *(const __m128i *) &roundKeys_[0]);
     _mm_store_si128(data, data_);
 }
-
-
-#else
-typedef void ISOCompilerHappiness_t;
-#endif
