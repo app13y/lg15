@@ -1,4 +1,4 @@
-> Project is now under development.
+> Released version 0.3.5
 
 ### Description
 
@@ -39,19 +39,3 @@ SIMD implementation utilises SSE instruction set, a set of extended processor in
 Source code is by no means portable on all platforms out-of-the-box, though it should be fairly easy to port compact version of implementation on any platform with a few minor tweaks. 
 
 Porting optimised and SIMD versions on platform with a different endianness requires rotating each vector in precalculated long tables. 
-
-
-### Compiling
-
-Project configuration is currently a work-in-progress, sources are currently compiled with
-
-```
--std=c99 -pedantic -Wall -Wextra -Werror
-```
-
-Release version is compiled with
-
-```
--std=c99 -m64 -Ofast
-```
-
