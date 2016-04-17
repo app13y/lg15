@@ -3,10 +3,11 @@
 #include <stdio.h>
 #include "gosthopper.h"
 
+
 int testKeyScheduling(void) {
     int numberOfFailedTests_ = 0;
     void *roundKeys_ = NULL, *memory_ = NULL;
-    const uint8_t secretKey_[ KeyLengthInBytes ] = {
+    const uint8_t secretKey_[KeyLengthInBytes] = {
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
     };
@@ -38,7 +39,7 @@ int testKeyScheduling(void) {
     scheduleEncryptionRoundKeys(roundKeys_, secretKey_, memory_);
     numberOfFailedTests_ += (memcmp(roundKeys_, expectedRoundKeys_, NumberOfRounds * BlockLengthInBytes) != 0);
 
-cleanup:
+    cleanup:
     free(roundKeys_);
     free(memory_);
     return numberOfFailedTests_;
@@ -71,6 +72,7 @@ int testBlockEncryption(void) {
 
     return numberOfFailedTests_;
 }
+
 
 int testBlockDecryption(void) {
     int numberOfFailedTests_ = 0;
@@ -110,6 +112,7 @@ int testBlockDecryption(void) {
     return numberOfFailedTests_;
 }
 
+
 int main(void) {
     int globalNumberOfFailedTests_ = 0, localNumberOfFailedTests_ = 0;
     printf("Running GOST selftests:\n");
@@ -118,7 +121,8 @@ int main(void) {
     if ((localNumberOfFailedTests_ = testKeyScheduling())) {
         printf("FAILED, errors occured: %i.\n", localNumberOfFailedTests_);
         globalNumberOfFailedTests_ += localNumberOfFailedTests_;
-    } else {
+    }
+    else {
         printf("OK.\n");
     }
 
@@ -126,7 +130,8 @@ int main(void) {
     if ((localNumberOfFailedTests_ = testBlockEncryption())) {
         printf("FAILED, errors occured: %i.\n", localNumberOfFailedTests_);
         globalNumberOfFailedTests_ += localNumberOfFailedTests_;
-    } else {
+    }
+    else {
         printf("OK.\n");
     }
 
@@ -134,7 +139,8 @@ int main(void) {
     if ((localNumberOfFailedTests_ = testBlockDecryption())) {
         printf("FAILED, errors occured: %i.\n", localNumberOfFailedTests_);
         globalNumberOfFailedTests_ += localNumberOfFailedTests_;
-    } else {
+    }
+    else {
         printf("OK.\n");
     }
 
