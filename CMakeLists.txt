@@ -43,7 +43,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU")
     target_compile_options(gost15 PRIVATE $<$<CONFIG:Release>:-march=native -O3>)
 
     if(NOT ENABLE_SIMD)
-        message(WARNING "Disabling SIMD instructions optimisation.")
         target_compile_options(gost15 PRIVATE -mno-sse)
     endif()
 
@@ -56,8 +55,6 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
         message(WARNING "Disabling SIMD instructions optimisation.")
         target_compile_options(gost15 PRIVATE -mno-sse)
     endif()
-
-    get_target_property(GOST15_COMPILE_OPTIONS gost15 COMPILE_OPTIONS)
 endif()
 
 
