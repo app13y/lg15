@@ -1,7 +1,7 @@
 #include <string.h>
-#include "gosthopper.h"
-#include "tables.h"
-#include "optimised_tables.h"
+#include <libgost15/gost15.h>
+#include <tables.h>
+#include <optimised_tables.h>
 
 
 const size_t WorkspaceOfScheduleRoundKeys = BlockLengthInBytes * 2;

@@ -1,8 +1,10 @@
 #include <emmintrin.h>
 #include <string.h>
-#include "gosthopper.h"
-#include "tables.h"
-#include "SIMD_tables.h"
+#include <libgost15/gost15.h>
+#include <tables.h>
+#include <SIMD_tables.h>
+
+// TODO: Beat alignment warnings with Clang's and GCC's -Wcast-align.
 
 const size_t WorkspaceOfScheduleRoundKeys = 0;
 
@@ -53,8 +55,8 @@ static void applyLSTransformation(
     addresses1_ = _mm_srli_epi16(addresses1_, 4);
     addresses2_ = _mm_slli_epi16(addresses2_, 4);
 
-    temporary1_ = _mm_load_si128((const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 0) + 0x1000));
-    temporary2_ = _mm_load_si128((const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 0)));
+    temporary1_ = _mm_load_si128((const void *) (precomputedLSTable + _mm_extract_epi16(addresses1_, 0) + 0x1000));
+    temporary2_ = _mm_load_si128((const void *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 0)));
 
     temporary1_ = _mm_xor_si128(temporary1_, *(const __m128i *) (precomputedLSTable+ _mm_extract_epi16(addresses1_, 1)+ 0x3000));
     temporary2_ = _mm_xor_si128(temporary2_, *(const __m128i *) (precomputedLSTable + _mm_extract_epi16(addresses2_, 1) + 0x2000));
@@ -94,8 +96,8 @@ static void applyInversedLSTransformation(
     addresses1_ = _mm_srli_epi16(addresses1_, 4);
     addresses2_ = _mm_slli_epi16(addresses2_, 4);
 
-    cache1_ = _mm_load_si128((const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 0) + 0x1000));
-    cache2_ = _mm_load_si128((const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 0)));
+    cache1_ = _mm_load_si128((const void *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 0) + 0x1000));
+    cache2_ = _mm_load_si128((const void *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 0)));
 
     cache1_ = _mm_xor_si128(cache1_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses1_, 1) + 0x3000));
     cache2_ = _mm_xor_si128(cache2_, *(const __m128i *) (precomputedInversedLSTable + _mm_extract_epi16(addresses2_, 1) + 0x2000));

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "gosthopper.h"
+#include <libgost15/gost15.h>
 
 #if defined __APPLE__
     #include <mach/mach_time.h>

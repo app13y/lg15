@@ -1,5 +1,5 @@
-#ifndef GOSTHOPPER_HEADER_INCLUDED_
-#define GOSTHOPPER_HEADER_INCLUDED_
+#if !defined LIBGOST15_HEADER_INCLUDED_
+#define LIBGOST15_HEADER_INCLUDED_
 
 #include <stdint.h>
 #include <stddef.h>
