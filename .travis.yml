@@ -27,11 +27,11 @@ install:
   - rm -rf cmake-3.2.1.tar.gz
 
 before_script:
-  - ./cmake-3.2.1/cmake --version
+  - cmake-3.2.1/bin/cmake --version
   - mkdir build
   - cd build
 
 script:
-  - ./cmake-3.2.1/cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src
+  - cmake-3.2.1/bin/cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src
   - make selftests_gost
   - ./libgost15/tests/selftests_gost
