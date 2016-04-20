@@ -27,16 +27,24 @@ Performance is measured by a separate tool residing in benchmark subdirectory. I
 
 All functions provided by `libgost15` are thread-safe thus measuring takes place in single thread.
 
-##### Benchmark data (Intel Core i5 Sandy Bridge @ 2.6 GHz, single core)
+#### Benchmark data (Intel Core i5 Sandy Bridge @ 2.60 GHz, single core)
 
 | Operation        | `compact`   | `optimised`   | `SIMD`        |
 |:---------------- |:----------- |:------------- |:------------- |
 | Block encryption | 4.4321 MB/s | 100.8338 MB/s | 158.8720 MB/s |
 | Block decryption | 4.3837 MB/s | 102.0845 MB/s | 157.5190 MB/s |
 
+#### Benchmark data (Intel Core i7-2677M Sandy Bridge @ 1.80 GHz, single core)
+
+| Operation        | `compact`   | `optimised`   | `SIMD`        |
+|:---------------- |:----------- |:------------- |:------------- |
+| Block encryption | 1.2840 MB/s |  62.6575 MB/s | 112.2875 MB/s |
+| Block decryption | 1.2676 MB/s |  64.4036 MB/s | 114.6625 MB/s |
+
+
 ### Implementations
 
-##### Compact implementation
+#### Compact implementation
 
 Straightforward implementation of block encryption and decryption routines, with little or no major optimisations. Has lowest memory requirements. Does not require SSE instructions.
 
@@ -48,7 +56,7 @@ Why use this and not [official TC26 implementation](http://tc26.ru/standard/gost
 
 This implementation is build by default and it does not require any special predefined variables.
 
-##### Optimised implementation
+#### Optimised implementation
 
 Optimised implementation employs vector-by-matrix multiplication precomutation technique described in [no link yet], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables. Does not require SSE instructions.
 
@@ -58,7 +66,7 @@ To use optimised implementation, define `ENABLE_PRECALCULATIONS` environment var
 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_PRECALCULATIONS=ON ...
 ```
 
-##### SIMD implementation
+#### SIMD implementation
 
 SIMD implementation utilises SSE instruction set, a set of extended processor instructions which enable one to operate over 128-bit XMM registers, thus further speeding up optimised implementation. Requires SSE2 or higher.
 
