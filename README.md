@@ -12,30 +12,64 @@ New cipher itself has a structure of SP-network with fixed byte-to-byte S-box an
 
 compared to its predecessor GOST 28147.
 
-This project provides several C99 versions of implementation with minimal or no dependencies while achieving high performance:
+This repository hosts C99 library `libgost15` which provides three (interchangeable) versions of basic implementations:
 
 * compact implementation,
 * optimised implementation,
 * SIMD implementation.
 
-#### Compact implementation
+### Performance
 
-Straightforward implementation of block encryption and decryption routines, with little or no major optimisations. Has lowest memory requirements.
+Performance is measured by a separate tool residing in benchmark subdirectory. It links with `libgost15` and measures speed of these operations:
 
-#### Optimised implementation
+* block encryption,
+* block decryption.
 
-To use optimised implementation, define `USE_OPTIMISED_IMPLEMENTATION` environment variable before compiling.
+All functions provided by `libgost15` are thread-safe thus measuring takes place in single thread.
 
-Optimised implementation employs vector-by-matrix multiplication precomutation technique described in [add link], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables.
+##### Benchmark data (Intel Core i5 Sandy Bridge @ 2.6 GHz, single core)
 
-#### SIMD implementation
+| Operation        | `compact`   | `optimised`   | `SIMD`        |
+|:---------------- |:----------- |:------------- |:------------- |
+| Block encryption | 4.4321 MB/s | 100.8338 MB/s | 158.8720 MB/s |
+| Block decryption | 4.3837 MB/s | 102.0845 MB/s | 157.5190 MB/s |
 
-SIMD implementation automatically enables when `USE_OPTIMISED_IMPLEMENTATION` is defined and Intel (at least) SSE2 instruction set is supported by processor.
+### Implementations
 
-SIMD implementation utilises SSE instruction set, a set of extended processor instructions which enable one to operate over 128-bit XMM registers. Combined with vector-by-matrix multiplication, SSE instructions help to achieve incredible performance.
+##### Compact implementation
+
+Straightforward implementation of block encryption and decryption routines, with little or no major optimisations. Has lowest memory requirements. Does not require SSE instructions.
+
+Why use this and not [official TC26 implementation](http://tc26.ru/standard/gost/PR_GOSTR_bch_v6.zip)?
+
+* It works on any platform, not just Windows.
+* All sixteen R transformations are merged into single L transformation thus cutting out rotations.
+* Better grammar and code organisation.
+
+This implementation is build by default and it does not require any special predefined variables.
+
+##### Optimised implementation
+
+Optimised implementation employs vector-by-matrix multiplication precomutation technique described in [no link yet], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables. Does not require SSE instructions.
+
+To use optimised implementation, define `ENABLE_PRECALCULATIONS` environment variable before building:
+
+```
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_PRECALCULATIONS=ON ...
+```
+
+##### SIMD implementation
+
+SIMD implementation utilises SSE instruction set, a set of extended processor instructions which enable one to operate over 128-bit XMM registers, thus further speeding up optimised implementation. Requires SSE2 or higher.
+
+To use optimised implementation, define both `ENABLE_PRECALCULATIONS` and `ENABLE_SIMD` environment variables before building:
+
+```
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_PRECALCULATIONS=ON -DENABLE_SIMD=ON ...
+```
+
+Future versions of `libgost15` might enable this implementation version by default when optimised version is selected and SSE instruction set (SSE2+) is available.
 
 ### Portability
 
-Source code is by no means portable on all platforms out-of-the-box, though it should be fairly easy to port compact version of implementation on any platform with a few minor tweaks. 
-
-Porting optimised and SIMD versions on platform with a different endianness requires rotating each vector in precalculated long tables. 
+I am working as hard as I can to make this code portable and test it on as many platforms as I can. You are welcome to contribute.
