@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "libgost15/gost15.h"
+#include <libgost15/gost15.h>
 
 
 int testKeyScheduling(void) {
