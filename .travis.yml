@@ -34,5 +34,5 @@ before_script:
 
 script:
     - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src
-    - make
-    - make CTEST_OUTPUT_ON_FAILURE=1 test
+    - make selftests-gost
+    - ./libgost15/tests/selftests_gost
