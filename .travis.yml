@@ -1,0 +1,24 @@
+language: c
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+env:
+global:
+  - CMAKE_BUILD_TYPE=Release
+matrix:
+  - BUILD_TYPE=Release
+  - BUILD_TYPE=Debug
+  - ENABLE_PRECALCULATIONS=OFF                    # compact version
+  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=OFF     # optimised version
+  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=ON      # SIMD version
+
+script:
+    - mkdir build && cd build
+    - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src
+    - make
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
