@@ -1,4 +1,5 @@
 language: c
+sudo: false
 os:
   - linux
   - osx
@@ -17,22 +18,20 @@ matrix:
 
 install:
   # Installing CMake 3.2.1
-  - sudo apt-get remove cmake
   - wget --no-check-certificate http://www.cmake.org/files/v3.2/cmake-3.2.1.tar.gz
   - tar -xzf cmake-3.2.1.tar.gz
   - cd cmake-3.2.1
-  - ./bootstrap > /dev/null
-  - make -j8 > /dev/null
-  - sudo make install
+  - ./bootstrap
+  - make
   - cd ..
-  - rm -rf cmake-3.2.1 cmake-3.2.1.tar.gz
+  - rm -rf cmake-3.2.1.tar.gz
 
 before_script:
-  - cmake --version
+  - ./cmake-3.2.1/cmake --version
   - mkdir build
   - cd build
 
 script:
-    - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src
-    - make selftests_gost
-    - ./libgost15/tests/selftests_gost
+  - ./cmake-3.2.1/cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src
+  - make selftests_gost
+  - ./libgost15/tests/selftests_gost
