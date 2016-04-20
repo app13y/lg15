@@ -1,24 +1,38 @@
 language: c
 os:
   - linux
-  - osx
+#  - osx
 
 compiler:
   - gcc
-  - clang
+#  - clang
 
 env:
-global:
-  - CMAKE_BUILD_TYPE=Release
 matrix:
   - BUILD_TYPE=Release
-  - BUILD_TYPE=Debug
+#  - BUILD_TYPE=Debug
   - ENABLE_PRECALCULATIONS=OFF                    # compact version
-  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=OFF     # optimised version
-  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=ON      # SIMD version
+#  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=OFF     # optimised version
+#  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=ON      # SIMD version
+
+install:
+  # Installing CMake 3.2.1
+  - sudo apt-get remove cmake
+  - wget http://www.cmake.org/files/v3.2/cmake-3.2.1.tar.gz
+  - tar -xzf cmake-3.2.1.tar.gz
+  - cd cmake-3.2.1
+  - ./bootstrap > /dev/null
+  - make -j8 > /dev/null
+  - sudo make install
+  - cd ..
+  - rm -rf cmake-3.2.1 cmake-3.2.1.tar.gz
+
+before_script:
+  - cmake --version
+  - mkdir build
+  - cd build
 
 script:
-    - mkdir build && cd build
     - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src
     - make
     - make CTEST_OUTPUT_ON_FAILURE=1 test
