@@ -13,14 +13,11 @@ enum {
     KeyLengthInBytes = 256 / 8,
 };
 
-enum operationMode_t {
-    ECB,
-    CBC,
-    CFB,
-    OFB
-};
-
 extern const size_t WorkspaceOfScheduleRoundKeys;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void encryptBlock(
         const void *roundKeys,
@@ -42,5 +39,9 @@ void scheduleDecryptionRoundKeys(
         const void *key,
         void *memory
 );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

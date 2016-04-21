@@ -15,7 +15,6 @@ option(ENABLE_SIMD            "Enable SIMD code optimisations"                  
 
 ## libgost15 definition
 add_library(libgost15)
-add_library(gosthopper::libgost15 ALIAS libgost15)
 
 ## libgost15 source files
 if (ENABLE_PRECALCULATIONS AND ENABLE_SIMD)
@@ -33,7 +32,11 @@ endif()
 target_include_directories(libgost15 PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(libgost15 PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(libgost15 PRIVATE src)
-target_compile_features(libgost15 PUBLIC c_restrict)
+
+## libgost15 compile feature: c_restrict
+if (CMAKE_C_COMPILE_FEATURES)
+    target_compile_features(libgost15 PUBLIC c_restrict)
+endif()
 
 ## Falling back to strict C standard
 set_target_properties(libgost15 PROPERTIES C_EXTENSIONS OFF)

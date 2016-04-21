@@ -8,7 +8,7 @@
 add_executable(selftests_gost selftests_gost.c)
 
 ## Linking libgost15
-target_link_libraries(selftests_gost PUBLIC gosthopper::libgost15)
+target_link_libraries(selftests_gost PUBLIC libgost15)
 
 ## Enabling and adding tests
 enable_testing()
