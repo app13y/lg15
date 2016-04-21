@@ -1,5 +1,7 @@
-language: c
-sudo: false
+language:
+  C++
+sudo:
+  false
 addons:
   apt:
     packages:
@@ -15,11 +17,13 @@ compiler:
 
 env:
 matrix:
-  - BUILD_TYPE=Release
-  - BUILD_TYPE=Debug
-  - ENABLE_PRECALCULATIONS=OFF                    # compact version
-  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=OFF     # optimised version
-  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=ON      # SIMD version
+  - ENABLE_PRECALCULATIONS=OFF ENABLE_SIMD=OFF BUILD_TYPE=Release
+  - ENABLE_PRECALCULATIONS=OFF ENABLE_SIMD=OFF BUILD_TYPE=Debug
+  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=OFF BUILD_TYPE=Release
+  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=OFF BUILD_TYPE=Debug
+allow_failures:
+  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=ON BUILD_TYPE=Release
+  - ENABLE_PRECALCULATIONS=ON ENABLE_SIMD=ON BUILD_TYPE=Debug
 
 install:
   # Installing CMake 3.2.1
@@ -37,6 +41,6 @@ before_script:
   - cd build
 
 script:
-  - ../cmake-3.2.1/bin/cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../src/
+  - ../cmake-3.2.1/bin/cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_PRECALCULATIONS=$ENABLE_PRECALCULATIONS -DENABLE_SIMD=$ENABLE_SIMD ../src/
   - make selftests_gost
   - ./libgost15/tests/selftests_gost
