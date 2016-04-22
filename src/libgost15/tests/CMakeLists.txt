@@ -12,7 +12,8 @@ target_link_libraries(selftests_gost PUBLIC libgost15)
 
 ## Enabling coverage
 if(ENABLE_COVERAGE)
-    target_compile_options(selftests_gost PRIVATE -coverage)
+    set_target_properties(selftests_gost PROPERTIES LINK_FLAGS -fprofile-arcs)
+    target_compile_options(selftests_gost PRIVATE -fprofile-arcs -ftest-coverage)
 endif()
 
 ## Enabling and adding tests
