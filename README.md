@@ -1,5 +1,6 @@
-## libgost15 [![Build Status](https://travis-ci.org/aprelev/libgost15.svg?branch=master)](https://travis-ci.org/aprelev/libgost15)
-
+## libgost15
+[![Build Status](https://travis-ci.org/aprelev/libgost15.svg?branch=master)](https://travis-ci.org/aprelev/libgost15)
+[![GitHub release](https://img.shields.io/github/release/aprelev/libgost15.svg?maxAge=2592000)]()
 
 Year 2015 introduced new national block cipher standard GOST 34.12 '15, which goes by codename Grasshopper (**Kuznechik** as in **Kuz**min, **Nech**aev and **K**ompany).
 
