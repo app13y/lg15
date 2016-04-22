@@ -27,7 +27,7 @@ Performance is measured by a separate tool residing in benchmark subdirectory. I
 
 All functions provided by `libgost15` are thread-safe thus measuring takes place in single thread.
 
-#### Benchmark data (Intel Core i5 Sandy Bridge @ 2.60 GHz, single core)
+#### Benchmark data (Intel Core i7-2600 Sandy Bridge @ 3.40 GHz, single core)
 
 | Operation        | `compact`   | `optimised`   | `SIMD`        |
 |:---------------- |:----------- |:------------- |:------------- |
