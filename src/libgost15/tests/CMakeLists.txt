@@ -10,6 +10,12 @@ add_executable(selftests_gost selftests_gost.c)
 ## Linking libgost15
 target_link_libraries(selftests_gost PUBLIC libgost15)
 
+## Enabling coverage
+if(ENABLE_COVERAGE)
+    target_link_libraries(selftests_gost PRIVATE --coverage)
+    target_compile_options(selftests_gost PRIVATE --coverage)
+endif()
+
 ## Enabling and adding tests
 enable_testing()
 add_test(selftests_gost selftests_gost)

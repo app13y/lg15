@@ -46,17 +46,31 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU")
     target_compile_options(libgost15 PRIVATE $<$<CONFIG:Debug>:-pedantic -Wall -Wextra -Werror -Wno-unused-function -Wno-cast-align>)
     target_compile_options(libgost15 PRIVATE $<$<CONFIG:Release>:-march=native>)
 
+    ## Disabling SIMD if required
     if(NOT ENABLE_SIMD)
         target_compile_options(libgost15 PRIVATE -mno-sse)
+    endif()
+    
+    ## Enabling coverage
+    if(ENABLE_COVERAGE)
+        target_link_libraries(libgost15 PRIVATE --coverage)
+        target_compile_options(libgost15 PRIVATE --coverage)
     endif()
 
 ## libgost15 Clang compiler-specific flags
 elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
     target_compile_options(libgost15 PRIVATE $<$<CONFIG:DEBUG>:-Weverything -Werror -Wno-unused-function -Wno-cast-align>)
     target_compile_options(libgost15 PRIVATE $<$<CONFIG:RELEASE>:-march=native>)
-
+    
+    ## Disabling SIMD if required
     if(NOT ENABLE_SIMD)
         target_compile_options(libgost15 PRIVATE -mno-sse)
+    endif()
+    
+    ## Enabling coverage
+    if(ENABLE_COVERAGE)
+        target_link_libraries(libgost15 PRIVATE --coverage)
+        target_compile_options(libgost15 PRIVATE --coverage)
     endif()
 endif()
 
