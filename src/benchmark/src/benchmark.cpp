@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <sstream>
 #include <random>
-#include <libgost15/gost15.h>
+#include <libgost15/libgost15.h>
 
 const auto defaultDuration = std::chrono::duration<double, std::milli>(2000.);
 
@@ -90,7 +90,7 @@ void benchmarkEncryption(std::chrono::duration<double, std::milli> minimumDurati
         auto startedAt_ = std::chrono::high_resolution_clock::now();
 
         for (size_t iterationIndex_ = 0; iterationIndex_ < iterations_; ++iterationIndex_) {
-            encryptBlock(roundKeys_, block_);
+            encryptBlockWithGost15(roundKeys_, block_);
         }
 
         auto finishedAt_ = std::chrono::high_resolution_clock::now();
@@ -128,7 +128,7 @@ void benchmarkDecryption(std::chrono::duration<double, std::milli> minimumDurati
         auto startedAt_ = std::chrono::high_resolution_clock::now();
 
         for (size_t iterationIndex_ = 0; iterationIndex_ < iterations_; ++iterationIndex_) {
-            encryptBlock(roundKeys_, block_);
+            encryptBlockWithGost15(roundKeys_, block_);
         }
 
         auto finishedAt_ = std::chrono::high_resolution_clock::now();

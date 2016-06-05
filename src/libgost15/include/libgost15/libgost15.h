@@ -1,9 +1,7 @@
 #if !defined LIBGOST15_HEADER_INCLUDED_
 #define LIBGOST15_HEADER_INCLUDED_
 
-#include <stdint.h>
-#include <stddef.h>
-
+#include <libgost15/platform.h>
 
 enum {
     NumberOfRounds = 10,
@@ -19,22 +17,23 @@ extern const size_t WorkspaceOfScheduleRoundKeys;
 extern "C" {
 #endif
 
-void encryptBlock(
-        const void *roundKeys,
-        void *block
-);
-void decryptBlock(
+void encryptBlockWithGost15(
         const void *roundKeys,
         void *block
 );
 
-void scheduleEncryptionRoundKeys(
+void decryptBlockWithGost15(
+        const void *roundKeys,
+        void *block
+);
+
+void scheduleEncryptionRoundKeysForGost15(
         void *roundKeys,
         const void *key,
         void *memory
 );
 
-void scheduleDecryptionRoundKeys(
+void scheduleDecryptionRoundKeysForGost15(
         void *roundKeys,
         const void *key,
         void *memory

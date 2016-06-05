@@ -41,6 +41,13 @@ All functions provided by `libgost15` are thread-safe thus measuring takes place
 | Block encryption | 1.2840 MB/s |  62.6575 MB/s | 112.2875 MB/s |
 | Block decryption | 1.2676 MB/s |  64.4036 MB/s | 114.6625 MB/s |
 
+Performance measuring is enabled when `benchmark` target is built with CMake:
+
+```
+cmake -DIMPLEMENTATION=[implementation] [target]
+make benchmark
+./benchmark/benchmark
+```
 
 ### Implementations
 
@@ -54,26 +61,30 @@ Why use this and not [official TC26 implementation](http://tc26.ru/standard/gost
 * All sixteen R transformations are merged into single L transformation thus cutting out rotations.
 * Better grammar and code organisation.
 
-This implementation is build by default and it does not require any special predefined variables.
+This implementation is built with `-DIMPLEMENTATION=Compact` option:
+
+```
+cmake -DIMPLEMENTATION=Compact [target]
+```
 
 #### Optimised implementation
 
 Optimised implementation employs vector-by-matrix multiplication precomutation technique described in [no link yet], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables. Does not require SSE instructions.
 
-To use optimised implementation, define `ENABLE_PRECALCULATIONS` environment variable before building:
+This implementation is built with `-DIMPLEMENTATION=Optimised` option:
 
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_PRECALCULATIONS=ON ...
+cmake -DIMPLEMENTATION=Optimised [target]
 ```
 
 #### SIMD implementation
 
 SIMD implementation utilises SSE instruction set, a set of extended processor instructions which enable one to operate over 128-bit XMM registers, thus further speeding up optimised implementation. Requires SSE2 or higher.
 
-To use optimised implementation, define both `ENABLE_PRECALCULATIONS` and `ENABLE_SIMD` environment variables before building:
+This implementation is built with `-DIMPLEMENTATION=SIMD` option:
 
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_PRECALCULATIONS=ON -DENABLE_SIMD=ON ...
+cmake -DIMPLEMENTATION=SIMD [target]
 ```
 
 Future versions of `libgost15` might enable this implementation version by default when optimised version is selected and SSE instruction set (SSE2+) is available.

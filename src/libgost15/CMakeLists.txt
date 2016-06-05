@@ -7,28 +7,29 @@
 cmake_minimum_required(VERSION 3.2)
 
 ## libgost15 project declaration
-project(libgost15 VERSION 0.3.5 LANGUAGES C)
+project(libgost15 VERSION 0.4.0 LANGUAGES C)
 
 ## libgost15 global options
-option(ENABLE_PRECALCULATIONS "Use optimised implementation with precalculated tables" OFF)
-option(ENABLE_SIMD            "Enable SIMD code optimisations"                         OFF)
+set(IMPLEMENTATION "Optimised" CACHE STRING "Implementation version: Compact, Optimised or SIMD.")
 
 ## libgost15 definition
 add_library(libgost15)
 
 ## libgost15 source files
-if (ENABLE_PRECALCULATIONS AND ENABLE_SIMD)
-    message(WARNING "Building SIMD implementation version.")
-    target_sources(libgost15 PRIVATE src/SIMD.c src/tables.c src/SIMD_tables.c)
-elseif(ENABLE_PRECALCULATIONS)
-    message(WARNING "Building optimised implementation version.")
-    target_sources(libgost15 PRIVATE src/optimised.c src/tables.c src/optimised_tables.c)
+if (IMPLEMENTATION STREQUAL SIMD)
+    message(AUTHOR_WARNING "Building SIMD implementation version.")
+    target_sources(libgost15 PRIVATE src/SIMD/SIMD.c src/SIMD/SIMD_tables.c src/shared/tables.c)
+elseif(IMPLEMENTATION STREQUAL Optimised)
+    message(AUTHOR_WARNING "Building optimised implementation version.")
+    target_sources(libgost15 PRIVATE src/optimised/optimised.c src/optimised/optimised_tables.c src/shared/tables.c)
+elseif(IMPLEMENTATION STREQUAL Compact)
+    message(AUTHOR_WARNING "Building compact implementation version.")
+    target_sources(libgost15 PRIVATE src/compact/compact.c src/shared/tables.c)
 else()
-    message(WARNING "Building compact implementation version.")
-    target_sources(libgost15 PRIVATE src/compact.c src/tables.c)
+    message(FATAL_ERROR "No implementation specified.")
 endif()
 
-## libgost15 include directories and compiler features
+## libgost15 include directories
 target_include_directories(libgost15 PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(libgost15 PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(libgost15 PRIVATE src)
@@ -40,38 +41,13 @@ endif()
 
 ## Falling back to strict C standard
 set_target_properties(libgost15 PROPERTIES C_EXTENSIONS OFF)
+set_target_properties(libgost15 PROPERTIES C_STANDARD 99)
+set_target_properties(libgost15 PROPERTIES C_STANDARD_REQUIRED ON)
 
-## libgost15 GCC compiler-specific flags
-if(CMAKE_C_COMPILER_ID MATCHES "GNU")
-    target_compile_options(libgost15 PRIVATE $<$<CONFIG:Debug>:-pedantic -Wall -Wextra -Werror -Wno-unused-function -Wno-cast-align>)
-    target_compile_options(libgost15 PRIVATE $<$<CONFIG:Release>:-march=native>)
-
-    ## Disabling SIMD if required
-    if(NOT ENABLE_SIMD)
-        target_compile_options(libgost15 PRIVATE -mno-sse)
-    endif()
-    
-    ## Enabling coverage
-    if(ENABLE_COVERAGE)
-        target_link_libraries(libgost15 PRIVATE --coverage)
-        target_compile_options(libgost15 PRIVATE --coverage)
-    endif()
-
-## libgost15 Clang compiler-specific flags
-elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    target_compile_options(libgost15 PRIVATE $<$<CONFIG:DEBUG>:-Weverything -Werror -Wno-unused-function -Wno-cast-align>)
-    target_compile_options(libgost15 PRIVATE $<$<CONFIG:RELEASE>:-march=native>)
-    
-    ## Disabling SIMD if required
-    if(NOT ENABLE_SIMD)
-        target_compile_options(libgost15 PRIVATE -mno-sse)
-    endif()
-    
-    ## Enabling coverage
-    if(ENABLE_COVERAGE)
-        target_link_libraries(libgost15 PRIVATE --coverage)
-        target_compile_options(libgost15 PRIVATE --coverage)
-    endif()
+## Enabling coverage
+if(ENABLE_COVERAGE)
+    target_link_libraries(libgost15 PRIVATE --coverage)
+    target_compile_options(libgost15 PRIVATE --coverage)
 endif()
 
 ## libgost15 selftests

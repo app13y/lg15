@@ -1,7 +1,7 @@
 #if !defined LIBGOST15_SIMD_TABLES_HEADER_INCLUDED_
 #define LIBGOST15_SIMD_TABLES_HEADER_INCLUDED_
 
-#include <stdint.h>
+#include <libgost15/platform.h>
 
 /* Crude alignment macros. */
 #if defined _MSC_VER

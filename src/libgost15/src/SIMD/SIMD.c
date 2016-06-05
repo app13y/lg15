@@ -1,8 +1,8 @@
+#include <libgost15/libgost15.h>
+#include <SIMD/SIMD_tables.h>
+#include <shared/tables.h>
 #include <emmintrin.h>
 #include <string.h>
-#include <libgost15/gost15.h>
-#include <tables.h>
-#include <SIMD_tables.h>
 
 // TODO: Beat alignment warnings with Clang's and GCC's -Wcast-align.
 
@@ -139,7 +139,7 @@ static void applyFTransformation(
 }
 
 
-void scheduleEncryptionRoundKeys(
+void scheduleEncryptionRoundKeysForGost15(
         void *restrict roundKeys,
         const void *restrict key,
         void *restrict memory
@@ -165,13 +165,13 @@ void scheduleEncryptionRoundKeys(
 }
 
 
-void scheduleDecryptionRoundKeys(
+void scheduleDecryptionRoundKeysForGost15(
         void *restrict roundKeys,
         const void *restrict key,
         void *restrict memory
 ) {
     uint64_t *roundKeys_ = roundKeys;
-    scheduleEncryptionRoundKeys(roundKeys, key, memory);
+    scheduleEncryptionRoundKeysForGost15(roundKeys, key, memory);
 
     for (int keyIndex_ = 1; keyIndex_ <= 8; ++keyIndex_) {
         __m128i temporary1_, temporary2_;
@@ -184,7 +184,7 @@ void scheduleDecryptionRoundKeys(
 }
 
 
-void encryptBlock(
+void encryptBlockWithGost15(
         const void *restrict roundKeys,
         void *restrict data
 ) {
@@ -202,7 +202,7 @@ void encryptBlock(
 }
 
 
-void decryptBlock(
+void decryptBlockWithGost15(
         const void *restrict roundKeys,
         void *restrict data
 ) {

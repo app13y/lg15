@@ -1,7 +1,7 @@
+#include <libgost15/libgost15.h>
+#include <shared/tables.h>
+#include <optimised/optimised_tables.h>
 #include <string.h>
-#include <libgost15/gost15.h>
-#include <tables.h>
-#include <optimised_tables.h>
 
 
 const size_t WorkspaceOfScheduleRoundKeys = BlockLengthInBytes * 2;
@@ -99,7 +99,7 @@ static void applyFTransformation(
 }
 
 
-void scheduleEncryptionRoundKeys(
+void scheduleEncryptionRoundKeysForGost15(
         void *restrict roundKeys,
         const void *restrict key,
         void *restrict memory
@@ -129,7 +129,7 @@ void scheduleEncryptionRoundKeys(
 }
 
 
-void scheduleDecryptionRoundKeys(
+void scheduleDecryptionRoundKeysForGost15(
         void *restrict roundKeys,
         const void *restrict key,
         void *restrict memory
@@ -137,7 +137,7 @@ void scheduleDecryptionRoundKeys(
     uint64_t *roundKeys_ = roundKeys;
     uint64_t cache_[2] = {0};
 
-    scheduleEncryptionRoundKeys(roundKeys, key, memory);
+    scheduleEncryptionRoundKeysForGost15(roundKeys, key, memory);
 
     for (int roundKeyIndex_ = 1; roundKeyIndex_ <= 8; ++roundKeyIndex_) {
         memcpy(cache_,
@@ -150,7 +150,7 @@ void scheduleDecryptionRoundKeys(
 }
 
 
-void encryptBlock(
+void encryptBlockWithGost15(
         const void *restrict roundKeys,
         void *restrict data
 ) {
@@ -171,7 +171,7 @@ void encryptBlock(
 }
 
 
-void decryptBlock(
+void decryptBlockWithGost15(
         const void *restrict roundKeys,
         void *restrict data
 ) {
