@@ -12,9 +12,7 @@ compiler:
 env:
   - Coverage=ON BuildType=Release Implementation=Compact
   - Coverage=ON BuildType=Release Implementation=Optimised
-matrix:
-  allow_failures:
-    - env: Coverage=ON BuildType=Release Implementation=SIMD
+  - Coverage=ON BuildType=Release Implementation=SIMD
 
 install:
   # Installing CMake 3.2.1
