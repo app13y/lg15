@@ -1,10 +1,13 @@
-language: cpp
-sudo: false
+dist:
+  trusty
+sudo:
+  false
 
+language:
+  cpp
 os:
   - linux
   - osx
-
 compiler:
   - gcc
   - clang
@@ -14,31 +17,18 @@ env:
   - Coverage=ON BuildType=Release Implementation=Optimised
   - Coverage=ON BuildType=Release Implementation=SIMD
 
-install:
-  # Installing CMake 3.2.1
-  - wget --no-check-certificate http://www.cmake.org/files/v3.2/cmake-3.2.1.tar.gz
-  - tar -xzf cmake-3.2.1.tar.gz
-  - cd cmake-3.2.1
-  - cmake . > /dev/null
-  - make > /dev/null
-  - cd ..
-  - rm -rf cmake-3.2.1.tar.gz
-
 before_script:
-  - cmake-3.2.1/bin/cmake --version
-  - mkdir build
-  - cd build
-  
-  - ../cmake-3.2.1/bin/cmake
+  - mkdir build && cd build
+  - cmake
     -DCMAKE_BUILD_TYPE=$BuildType
     -DIMPLEMENTATION=$Implementation
     -DENABLE_COVERAGE=$Coverage
     -DCMAKE_VERBOSE_MAKEFILE=ON
     -DCMAKE_RULE_MESSAGES=OFF
-    ../src/
+    ./../src/
 
 script:
-  - make --no-print-directory all
+  - cmake --build .
   - cd libgost15/tests/ && ctest
 
 after_success:
