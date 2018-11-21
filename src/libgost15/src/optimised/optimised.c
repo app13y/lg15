@@ -163,7 +163,7 @@ void encryptBlockWithGost15(
         cache_[0] = data_[0] ^ roundKeys_[2 * round_];
         cache_[1] = data_[1] ^ roundKeys_[2 * round_ + 1];
 
-        applyLSTransformation((unsigned char *) cache_, data);
+        applyLSTransformation((unsigned char *) cache_, data_);
     }
 
     data_[0] = data_[0] ^ roundKeys_[2 * round_];
@@ -184,16 +184,16 @@ void decryptBlockWithGost15(
     data_[1] ^= roundKeys_[2 * round_ + 1];
     --round_;
 
-    applySTransformation(data);
-    applyInversedLSTransformation((unsigned char *) data, cache_);
-    applyInversedLSTransformation((unsigned char *) cache_, data);
+    applySTransformation((unsigned char *) data_);
+    applyInversedLSTransformation((unsigned char *) data_, cache_);
+    applyInversedLSTransformation((unsigned char *) cache_, data_);
 
     cache_[0] = data_[0] ^ roundKeys_[2 * round_];
     cache_[1] = data_[1] ^ roundKeys_[2 * round_ + 1];
     --round_;
 
     for (; round_ > 0; --round_) {
-        applyInversedLSTransformation((unsigned char *) cache_, data);
+        applyInversedLSTransformation((unsigned char *) cache_, data_);
 
         cache_[0] = data_[0] ^ roundKeys_[2 * round_];
         cache_[1] = data_[1] ^ roundKeys_[2 * round_ + 1];
