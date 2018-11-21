@@ -188,16 +188,16 @@ void encryptBlockWithGost15(
         const void *restrict roundKeys,
         void *restrict data
 ) {
-    const uint64_t *roundKeys_ = roundKeys;
-    __m128i cache_, data_;
+    const __m128i *roundKeys_ = roundKeys;
+    __m128i data_;
     int round_;
 
     data_ = _mm_loadu_si128(data);
     for (round_ = 0; round_ < NumberOfRounds - 1; ++round_) {
-        cache_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * round_]);
-        applyLSTransformation(&cache_, &data_);
+        __m128i buffer = _mm_xor_si128(data_, roundKeys_[round_]);
+        applyLSTransformation(&buffer, &data_);
     }
-    data_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * round_]);
+    data_ = _mm_xor_si128(data_, roundKeys_[round_]);
     _mm_store_si128(data, data_);
 }
 
@@ -206,23 +206,23 @@ void decryptBlockWithGost15(
         const void *restrict roundKeys,
         void *restrict data
 ) {
-    const uint64_t *roundKeys_ = roundKeys;
+    const __m128i *roundKeys_ = roundKeys;
     __m128i cache_, data_;
 
     data_ = _mm_loadu_si128(data);
-    data_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * (NumberOfRounds - 1)]);
+    data_ = _mm_xor_si128(data_, roundKeys_[NumberOfRounds - 1]);
 
     applySTransformation(&data_);
     applyInversedLSTransformation(&data_, &cache_);
     applyInversedLSTransformation(&cache_, &data_);
-    cache_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * (NumberOfRounds - 2)]);
+    cache_ = _mm_xor_si128(data_, roundKeys_[NumberOfRounds - 2]);
 
     for (int round_ = NumberOfRounds - 3; round_ > 0; --round_) {
         applyInversedLSTransformation(&cache_, &data_);
-        cache_ = _mm_xor_si128(data_, *(const __m128i *) &roundKeys_[2 * round_]);
+        cache_ = _mm_xor_si128(data_, roundKeys_[round_]);
     }
 
     applyInversedSTransformation(&cache_);
-    data_ = _mm_xor_si128(cache_, *(const __m128i *) &roundKeys_[0]);
+    data_ = _mm_xor_si128(cache_, roundKeys_[0]);
     _mm_store_si128(data, data_);
 }
