@@ -5,6 +5,7 @@
 #include <sstream>
 #include <random>
 #include <algorithm>
+#include <functional>
 #include <libgost15/libgost15.h>
 
 const auto defaultDuration = std::chrono::duration<double, std::milli>(2000.);
