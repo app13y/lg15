@@ -24,5 +24,5 @@ before_script:
     ..
 
 script:
-  - cmake --build . --parallel
+  - cmake --build .
   - ctest .
