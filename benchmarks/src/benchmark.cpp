@@ -92,7 +92,7 @@ void benchmarkEncryption(std::chrono::duration<double, std::milli> minimumDurati
         auto startedAt_ = std::chrono::high_resolution_clock::now();
 
         for (size_t iterationIndex_ = 0; iterationIndex_ < iterations_; ++iterationIndex_) {
-            encryptBlockWithGost15(roundKeys_, block_);
+            lg15_encryptBlocks(roundKeys_, block_, 1);
         }
 
         auto finishedAt_ = std::chrono::high_resolution_clock::now();
@@ -130,7 +130,7 @@ void benchmarkDecryption(std::chrono::duration<double, std::milli> minimumDurati
         auto startedAt_ = std::chrono::high_resolution_clock::now();
 
         for (size_t iterationIndex_ = 0; iterationIndex_ < iterations_; ++iterationIndex_) {
-            encryptBlockWithGost15(roundKeys_, block_);
+            lg15_decryptBlocks(roundKeys_, block_, 1);
         }
 
         auto finishedAt_ = std::chrono::high_resolution_clock::now();

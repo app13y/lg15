@@ -1,47 +1,35 @@
 #include <libgost15/libgost15.h>
+#include <libgost15/internals/alignas.h>
+#include <libgost15/internals/inline.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
-
-int testBlockDecryption(void) {
-    int numberOfFailedTests_ = 0;
-    void *roundKeys_ = NULL, *memory_ = NULL;
-
-    const uint8_t secretKey_[KeyLengthInBytes] = {
+static inline int
+testBlockDecryption(void) {
+    alignas(16) uint8_t const
+        secret[] = {
             0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
             0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
-    };
-
-    uint8_t block_[BlockLengthInBytes] = {
-            0x7f, 0x67, 0x9d, 0x90, 0xbe, 0xbc, 0x24, 0x30, 0x5a, 0x46, 0x8d, 0x42, 0xb9, 0xd4, 0xed, 0xcd,
-    };
-
-    const uint8_t expectedPlaintext_[BlockLengthInBytes] = {
+        },
+        output[] = {
             0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x00, 0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
-    };
+        };
+    alignas(16) uint8_t
+        roundKeys[NumberOfRounds * BlockLengthInBytes],
+        buffer[] = {
+            0x7f, 0x67, 0x9d, 0x90, 0xbe, 0xbc, 0x24, 0x30, 0x5a, 0x46, 0x8d, 0x42, 0xb9, 0xd4, 0xed, 0xcd,
+        };
 
-    roundKeys_ = malloc(NumberOfRounds * BlockLengthInBytes);
-    if (!roundKeys_) {
-        ++numberOfFailedTests_;
-        goto cleanup;
-    }
+    lg15_scheduleDecryptionRoundKeys(roundKeys, secret);
+    lg15_decryptBlocks(roundKeys, buffer, 1);
 
-    memory_ = malloc(WorkspaceOfScheduleRoundKeys);
-    if (!memory_ && WorkspaceOfScheduleRoundKeys) {
-        ++numberOfFailedTests_;
-        goto cleanup;
-    }
-
-    scheduleDecryptionRoundKeysForGost15(roundKeys_, secretKey_, memory_);
-    decryptBlockWithGost15(roundKeys_, block_);
-    numberOfFailedTests_ += (memcmp(block_, expectedPlaintext_, BlockLengthInBytes) != 0);
-
-    cleanup:
-    free(memory_);
-    return numberOfFailedTests_;
+    return memcmp(buffer, output, sizeof output);
 }
 
-
-int main(void) {
+int
+main(
+    void
+) {
     return testBlockDecryption();
 }

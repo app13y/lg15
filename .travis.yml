@@ -13,23 +13,16 @@ compiler:
   - clang
 
 env:
-  - Coverage=ON BuildType=Release Implementation=Compact
-  - Coverage=ON BuildType=Release Implementation=Optimised
-  - Coverage=ON BuildType=Release Implementation=SIMD
+  - Implementation=Universal
+  - Implementation=SSE2
 
 before_script:
   - mkdir build && cd build
   - cmake
-    -DCMAKE_BUILD_TYPE=$BuildType
+    -DCMAKE_BUILD_TYPE=$Release
     -DIMPLEMENTATION=$Implementation
-    -DENABLE_COVERAGE=$Coverage
-    -DCMAKE_VERBOSE_MAKEFILE=ON
-    -DCMAKE_RULE_MESSAGES=OFF
     ..
 
 script:
   - cmake --build . --parallel
   - ctest .
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)

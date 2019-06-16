@@ -10,7 +10,7 @@ function(add_test_executable test_name)
             C_EXTENSIONS OFF
             C_STANDARD 99
             C_STANDARD_REQUIRED ON)
-    target_link_libraries(${test_name} PUBLIC libgost15)
+    target_link_libraries(${test_name} PUBLIC lg15)
     add_test(${test_name} ${test_name})
 endfunction(add_test_executable)
 
