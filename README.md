@@ -1,11 +1,16 @@
-## libgost15
+## lg15
 
 [![Travis](https://travis-ci.org/aprelev/libgost15.svg?branch=master)](https://travis-ci.org/aprelev/libgost15) [![Codecov](https://codecov.io/gh/aprelev/libgost15/branch/master/graph/badge.svg)](https://codecov.io/gh/aprelev/libgost15) 
 [![GitHub release](https://img.shields.io/github/release/aprelev/libgost15.svg?maxAge=2592000)](https://github.com/aprelev/libgost15/releases/latest)
 
-Year 2015 introduced new national block cipher standard GOST 34.12 '15, which goes by codename Grasshopper (**Kuznechik** as in **Kuz**min, **Nech**aev and **K**ompany).
+New Russian national block cipher GOST R 34.12-'15,
+which goes by codename **Kuznechik** (as in **Kuz**min, **Nech**aev and **K**ompany),
+was introduced in 2015.
 
-New cipher itself has a structure of SP-network with fixed byte-to-byte S-box and linear transformations over Galois Field GF(256). It features
+New cipher itself has a structure of SP-network
+with fixed byte-to-byte S-box and
+linear transformations over Galois Field GF(256).
+It features
 
 * increased block length (128 bits),
 * decreased number of rounds (10 rounds),
@@ -13,83 +18,31 @@ New cipher itself has a structure of SP-network with fixed byte-to-byte S-box an
 
 compared to its predecessor GOST 28147.
 
-This repository hosts C99 library `libgost15` which provides three (interchangeable) versions of basic implementations:
+`lg15` library provides implementation for
+fast block encryption, decryption, and round keys scheduling by
+employing vector-by-matrix multiplication precomutation technique described in [no link yet],
+similar to one in 64KB versions of AES.
+This optimisation provides significant speed-up,
+but requires 128KB of additional memory for storing precomputed tables.
 
-* compact implementation,
-* optimised implementation,
-* SIMD implementation.
+Two (interchangeable) versions of implementations are provided:
 
-### Performance
+* `Universal` implementation, which is written in pure C, and
+* `SSE2` implementation, which utilises SSE2 instructions.
 
-Performance is measured by a separate tool residing in benchmark subdirectory. It links with `libgost15` and measures speed of these operations:
+### Tests
 
-* block encryption,
-* block decryption.
+Configure with `WITH_TESTS` to build `tests` executables,
+which evaluates implementation of encryption, decryption and keys scheduling against data from specification.
 
-All functions provided by `libgost15` are thread-safe thus measuring takes place in single thread.
+Tests can be run via CTest.
 
-#### Benchmark data (Intel Core i7-2600 Sandy Bridge @ 3.40 GHz, single core)
+### Benchmarks
 
-| Operation        | `compact`   | `optimised`   | `SIMD`        |
-|:---------------- |:----------- |:------------- |:------------- |
-| Block encryption | 4.4321 MB/s | 100.8338 MB/s | 158.8720 MB/s |
-| Block decryption | 4.3837 MB/s | 102.0845 MB/s | 157.5190 MB/s |
-
-#### Benchmark data (Intel Core i7-2677M Sandy Bridge @ 1.80 GHz, single core)
-
-| Operation        | `compact`   | `optimised`   | `SIMD`        |
-|:---------------- |:----------- |:------------- |:------------- |
-| Block encryption | 1.2840 MB/s |  62.6575 MB/s | 112.2875 MB/s |
-| Block decryption | 1.2676 MB/s |  64.4036 MB/s | 114.6625 MB/s |
-
-Performance measuring is enabled when `benchmark` target is built with CMake:
-
-```
-cmake -DIMPLEMENTATION=[implementation] [target]
-make benchmark
-./benchmark/benchmark
-```
-
-### Implementations
-
-#### Compact implementation
-
-Straightforward implementation of block encryption and decryption routines, with little or no major optimisations. Has lowest memory requirements. Does not require SSE instructions.
-
-Why use this and not [official TC26 implementation](http://tc26.ru/standard/gost/PR_GOSTR_bch_v6.zip)?
-
-* It works on any platform, not just Windows.
-* All sixteen R transformations are merged into single L transformation thus cutting out rotations.
-* Better grammar and code organisation.
-
-This implementation is built with `-DIMPLEMENTATION=Compact` option:
-
-```
-cmake -DIMPLEMENTATION=Compact [target]
-```
-
-#### Optimised implementation
-
-Optimised implementation employs vector-by-matrix multiplication precomutation technique described in [no link yet], similar to one in 64KB versions of AES. This implementation is much faster that the compact one, but requires 128KB os additional memory in data segment for storing precomputed tables. Does not require SSE instructions.
-
-This implementation is built with `-DIMPLEMENTATION=Optimised` option:
-
-```
-cmake -DIMPLEMENTATION=Optimised [target]
-```
-
-#### SIMD implementation
-
-SIMD implementation utilises SSE instruction set, a set of extended processor instructions which enable one to operate over 128-bit XMM registers, thus further speeding up optimised implementation. Requires SSE2 or higher.
-
-This implementation is built with `-DIMPLEMENTATION=SIMD` option:
-
-```
-cmake -DIMPLEMENTATION=SIMD [target]
-```
-
-Future versions of `libgost15` might enable this implementation version by default when optimised version is selected and SSE instruction set (SSE2+) is available.
+Configure with `WITH_BENCHMARKS` to build `benchmarks` executable.
+All functions provided by `lg15` are non-blocking thus measuring takes place in single thread.
 
 ### Portability
 
-I am working as hard as I can to make this code portable and test it on as many platforms as I can. You are welcome to contribute.
+I am working as hard as I can to make this code portable and test it on as many platforms as I can.
+Bug reports and pull requests are welcome.
