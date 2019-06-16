@@ -25,11 +25,11 @@ before_script:
     -DENABLE_COVERAGE=$Coverage
     -DCMAKE_VERBOSE_MAKEFILE=ON
     -DCMAKE_RULE_MESSAGES=OFF
-    ./../src/
+    ..
 
 script:
-  - cmake --build .
-  - cd libgost15/tests/ && ctest
+  - cmake --build . --parallel
+  - ctest .
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

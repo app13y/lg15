@@ -14,8 +14,6 @@ function(add_test_executable test_name)
     add_test(${test_name} ${test_name})
 endfunction(add_test_executable)
 
-## Selftests declaration
-enable_testing()
-add_test_executable(KeyScheduleTest schedule.c)
-add_test_executable(BlockEncryptionTest encryption.c)
-add_test_executable(BlockDecryptionTest decryption.c)
+add_test_executable(KeyScheduleTest src/schedule.c)
+add_test_executable(BlockEncryptionTest src/encryption.c)
+add_test_executable(BlockDecryptionTest src/decryption.c)

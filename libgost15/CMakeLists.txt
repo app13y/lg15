@@ -1,9 +1,3 @@
-##########################################################################################
-##                                                                                      ##
-##                                  libgost15 library                                   ##
-##                                                                                      ##
-##########################################################################################
-
 cmake_minimum_required(VERSION 3.2)
 
 ## libgost15 project declaration
@@ -49,6 +43,3 @@ if(ENABLE_COVERAGE)
     target_link_libraries(libgost15 PRIVATE --coverage)
     target_compile_options(libgost15 PRIVATE --coverage)
 endif()
-
-## libgost15 selftests
-add_subdirectory(tests)
